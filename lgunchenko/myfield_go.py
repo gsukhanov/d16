@@ -14,17 +14,4 @@ for x in range (0, size*35, 35):
                 else: 
                         color = "brown"
                 c.create_rectangle (x+50, y+100, x+85, y+135, fill = color)
-
-def ctone(event):
-        c = event.widget
-        c.create_oval((event.x) // 25 * 25, (event.y) // 25 * 25, (event.x) // 25 * 25 + 25, (event.y) // 25 * 25 + 25, fill = "yellow")
-def stone(event):
-        c = event.widget
-        c.create_oval((event.x) // 25 * 25, (event.y) // 25 * 25, (event.x) // 25 * 25 + 25, (event.y) // 25 * 25 + 25, fill = "green")
-c.bind("<Button-1>", ctone)
-c.bind("<Button-3>", stone)
-
-
-
-
 c.mainloop()

@@ -1,178 +1,81 @@
 import tkinter
-# игровой процесс:
-n = int(input()) # n - кол-во клеток в строке и столбце (поле n*n)
-c = tkinter.Canvas(width = 100 * n, height = 100 * n)
+n = 3
+p = 100
+c = tkinter.Canvas(width = p * n, height = p * n)
 c.pack()
-# создается поле n*n
-for i in range(0, 100 * n, 100):
-	c.create_line(0, i, 100 * n, i)
-for i in range(0, 100 * n, 100):
-	c.create_line(i, 0, i, 100 * n)
-# создаются массивы A и B, в которые будут записываться в каком месте кто поставил крестик(А) или нолик(В)
-A = [[0] * n for i in range(n)]
-B = [[0] * n for i in range(n)]
-# функция, кторая при нажатии рисует крестик или нолик, при этом записывая действия в созданные массивы
-def tick(event):
-	c = event.widget
-	c.create_line(event.x // 100 * 100, event.y // 100 * 100, event.x // 100 * 100 + 100, event.y // 100 * 100 + 100)
-	c.create_line(event.x // 100 * 100, event.y // 100 * 100 + 100, event.x // 100 * 100 + 100, event.y // 100 * 100)
-	A[event.x // 100][event.y // 100] = 1
-	for i in range(n):
-		s = 0
-		for j in range(n):
-			s += A[i][j]
-		if s == n:
-			c.create_line(100 * j + 50, 0, 100 * j + 50, n)
-			c.create_text(50, 100, text="Tick win!")
-			return
-	# 2: для столбца
-	for j in range(n):
-		s = 0
-		for i in range(n):
-			s += A[i][j]
-		if s == n:
-			c.create_line(0, 100 * i + 50, 100 * n, 100 * i + 50)
-			c.create_text(50, 100, text="Tick win!")
-			return
-	# 3: для диагонали(л-в - п-н)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i == j:
-				s += A[i][j]
-	if s == n:
-		c.create_line(0, 0, n, n)
-		c.create_text(50, 100, text="Tick win!")
-		return
-	# 4: для диагонали(л-н - п-в)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i + j == n:
-				s += A[i][j]
-	if s == n:
-		c.create_line(0, n, n, 0)
-		c.create_text(50, 100, text="Tick win!")
-		return
-	# выиграли нолики
-	# 1: для строки
-	for i in range(n):
-		s = 0
-		for j in range(n):
-			s += B[i][j]
-		if s == n:
-			c.create_line(100 * j + 50, 0, 100 * j + 50, n)
-			c.create_text(50, 100, text="Zero win!")
-			return
-	# 2: для столбца
-	for j in range(n):
-		s = 0
-		for i in range(n):
-			s += B[i][j]
-		if s == n:
-			c.create_line(0, 100 * i + 50, 100 * n, 100 * i + 50)
-			c.create_text(50, 100, text="Zero win!")
-			return
-	# 3: для диагонали(л-в - п-н)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i == j:
-				s += B[i][j]
-	if s == n:
-		c.create_line(0, 0, n, n)
-		c.create_text(50, 100, text="Zero win!")
-		return
-	# 4: для диагонали(л-н - п-в)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i + j == n:
-				s += B[i][j]
-	if s == n:
-		c.create_line(0, n, n, 0)
-		c.create_text(50, 100, text="Zero win!")
-		return
-def zero(event):
-	c = event.widget
-	c.create_oval(event.x // 100 * 100, event.y // 100 * 100, event.x // 100 * 100 + 100, event.y // 100 * 100 + 100)
-	B[event.x // 100][event.y // 100] = 1
-	for i in range(n):
-		s = 0
-		for j in range(n):
-			s += A[i][j]
-		if s == n:
-			c.create_line(100 * j + 50, 0, 100 * j + 50, n)
-			c.create_text(50, 100, text="Tick win!")
-			return
-	# 2: для столбца
-	for j in range(n):
-		s = 0
-		for i in range(n):
-			s += A[i][j]
-		if s == n:
-			c.create_line(0, 100 * i + 50, 100 * n, 100 * i + 50)
-			c.create_text(50, 100, text="Tick win!")
-			return
-	# 3: для диагонали(л-в - п-н)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i == j:
-				s += A[i][j]
-	if s == n:
-		c.create_line(0, 0, n, n)
-		c.create_text(50, 100, text="Tick win!")
-		return
-	# 4: для диагонали(л-н - п-в)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i + j == n:
-				s += A[i][j]
-	if s == n:
-		c.create_line(0, n, n, 0)
-		c.create_text(50, 100, text="Tick win!")
-		return
-	# выиграли нолики
-	# 1: для строки
-	for i in range(n):
-		s = 0
-		for j in range(n):
-			s += B[i][j]
-		if s == n:
-			c.create_line(100 * j + 50, 0, 100 * j + 50, n)
-			c.create_text(50, 100, text="Zero win!")
-			return
-	# 2: для столбца
-	for j in range(n):
-		s = 0
-		for i in range(n):
-			s += B[i][j]
-		if s == n:
-			c.create_line(0, 100 * i + 50, 100 * n, 100 * i + 50)
-			c.create_text(50, 100, text="Zero win!")
-			return
-	# 3: для диагонали(л-в - п-н)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i == j:
-				s += B[i][j]
-	if s == n:
-		c.create_line(0, 0, n, n)
-		c.create_text(50, 100, text="Zero win!")
-		return
-	# 4: для диагонали(л-н - п-в)
-	s = 0
-	for i in range(n):
-		for j in range(n):
-			if i + j == n:
-				s += B[i][j]
-	if s == n:
-		c.create_line(0, n, n, 0)
-		c.create_text(50, 100, text="Zero win!")
-		return
-c.bind("<Button-1>", tick)
-c.bind("<Button-3>", zero)
+for i in range(0, p * n, p):
+        c.create_line(0, i, p * n, i)
+for i in range(0, p * n, p):
+        c.create_line(i, 0, i, p * n)
+field = [[""] * n for i in range(n)]
+player = "cross"
+def move(event):
+        global player
+        c = event.widget
+        if player == "cross":
+                c.create_line(event.x // p * p, event.y // p * p + p, event.x // p * p + p, event.y // p * p)
+                c.create_line(event.x // p * p, event.y // p * p, event.x // p * p + p, event.y // p * p + p)
+                field[event.x // p][event.y // p] = "cross"
+        else:
+                c = event.widget
+                c.create_oval(event.x // p * p, event.y // p * p, event.x // p * p + p, event.y // p * p + p)
+                field[event.x // p][event.y // p] = "zero"
+        for i in range(n):
+                s = 0
+                for j in range(n):
+                        if field[i][j] == player:
+                                s += 1
+                if s == n:
+                        c.create_line(p * j + p // 2, 0, p * j + p // 2, n)
+                        if player == "cross":
+                                c.create_text(p // 2, p, text="Cross win!")
+                        else:
+                                c.create_text(p // 2, p, text="Zero win")
+                        exit(0)
+        # 2: для столбца
+        for j in range(n):
+                s = 0
+                for i in range(n):
+                        if field[i][j] == player:
+                                s += 1
+                if s == n:
+                        c.create_line(0, p * i + 50, p * n, p * i + p // 2)
+                        if player == "cross":
+                                c.create_text(p // 2, p, text="Cross win!")
+                        else:
+                                c.create_text(p // 2, p, text="Zero win")
+                        exit(0)
+        # 3: для диагонали(л-в - п-н)
+        s = 0
+        for i in range(n):
+                for j in range(n):
+                        if field[i][j] == player:
+                                if i == j:
+                                        s += field[i][j]
+        if s == n:
+                c.create_line(0, 0, n, n)
+                if player == "cross":
+                        c.create_text(p // 2, p, text="Cross win!")
+                else:
+                        c.create_text(p // 2, p, text="Zero win")
+                exit(0)
+        # 4: для диагонали(л-н - п-в)
+        s = 0
+        for i in range(n):
+                for j in range(n):
+                        if field[i][j] == player:
+                                if i + j == n:
+                                        s += field[i][j]
+        if s == n:
+                c.create_line(0, n, n, 0)
+                if player == "cross":
+                        c.create_text(p // 2, p, text="Cross win!")
+                else:
+                        c.create_text(p // 2, p, text="Zero win")
+                exit(0)
+        if player == "cross":
+                player = "zero"
+        else:
+                player = "cross"
+c.bind("<Button-1>", move)
 c.mainloop()

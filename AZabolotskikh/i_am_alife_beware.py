@@ -25,7 +25,7 @@ def r():
     for x in range(100):
         for y in range(100):
             if board[x][y] == 1:
-                deleteList.append(canvas.create_rectangle(kSize*x, kSize*y, kSize*(x+1), kSize*(y+1), fill = 'cyan'));
+                deleteList.append(canvas.create_rectangle(kSize*x, kSize*y, kSize*(x+1), kSize*(y+1), fill = 'black'));
 def b(event):
     x = event.x//kSize;
     y = event.y//kSize;

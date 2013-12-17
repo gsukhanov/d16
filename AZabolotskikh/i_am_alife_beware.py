@@ -19,23 +19,23 @@ for x in range(100):
     for y in range(100):
         canvas.create_rectangle(kSize*x, kSize*y, kSize*(x+1), kSize*(y+1));
 
-def r():
+def redraw():
     for item in deleteList:
         canvas.delete(item);
     for x in range(100):
         for y in range(100):
             if board[x][y] == 1:
                 deleteList.append(canvas.create_rectangle(kSize*x, kSize*y, kSize*(x+1), kSize*(y+1), fill = 'black'));
-def b(event):
+def diviveIntervention(event):
     x = event.x//kSize;
     y = event.y//kSize;
     if board[x][y] == 1:
         board[x][y] = 0;
     else:
         board[x][y] = 1;
-    r();
+    redraw();
 
-def c():
+def makeTurn():
     global board;
     global nboard;
     for x in range(100):
@@ -81,19 +81,19 @@ def c():
                 nboard[x][y] = board[x][y]
     board, nboard = nboard, board;
     
-def l(*args):
+def loop(*args):
     if state:
-        c();
-        r();
-        canvas.after(10, func=l);
+        makeTurn();
+        redraw();
+        canvas.after(10, func=loop);
 
-def s(*args):
+def switchState(*args):
     global state;
     state = not state;
     if state:
-        l();
+        loop();
     
     
-canvas.bind("<Button-1>",b);
-canvas.bind("<Button-3>",s);
+canvas.bind("<Button-1>",diviveIntervention);
+canvas.bind("<Button-3>",switchState);
 canvas.mainloop();

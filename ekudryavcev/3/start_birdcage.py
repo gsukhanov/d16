@@ -10,7 +10,7 @@ if size < 6 or size > 15:
 c = tkinter.Canvas(width = 100 + 50 * size, height = 100 + 50 * size)
 c.pack()
 
-def neau(c):
+def cancrea(c):
 	x = 50
 	y= 50
 	for i in range (size + 1):
@@ -29,8 +29,6 @@ def neau(c):
 			y += 50
 		x += 50
 
-neau(c)
-
 def bridgeit(b , c):
 	if b.direction=="hor":
 		c.create_line(b.xpos , b.ypos , b.xpos + 50 , b.ypos , fill = "black" , width = 5)
@@ -43,13 +41,16 @@ def click(event):
 	c = event.widget
 	xp = event.x
 	yp = event.y
-	b = Bridge(xp , yp , "blue" , "vert")
+	nex = (xp - 25) / 25
+	ney = (yp - 50) / 25
+	b = Bridge(nex * 25 + 25 , ney * 25 + 50 , "red" , "hor")
 	bridges.append(b)
 	bridgeit(b , c)
+
+cancrea(c)
 
 c.bind("<Button-1>", click)
 
 bridges = []
-
 
 c.mainloop()

@@ -22,6 +22,7 @@ for x in range(100):
 def redraw():
     for item in deleteList:
         canvas.delete(item);
+	del deleteList[:];
     for x in range(100):
         for y in range(100):
             if board[x][y] == 1:

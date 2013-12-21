@@ -3,7 +3,7 @@ import sys
 import random
 import math
 from collections import namedtuple
- 
+
 WIDTH=440
 HEIGHT=660
 FPS = 1000
@@ -30,7 +30,7 @@ a=A0
 FILL=['red','blue','white','brown','yellow','orange','grey']
 FILL1=['white','white','white','white','white','white','red']
 fill=FILL
- 
+
 Point = namedtuple("Point", ["x", "y"])
 Ball = namedtuple("Game", ["position", "angle","active"])
 HOLES=[(-HOLE_RADIUS[0],-HOLE_RADIUS[0],HOLE_RADIUS[0],HOLE_RADIUS[0]),
@@ -39,7 +39,7 @@ HOLES=[(-HOLE_RADIUS[0],-HOLE_RADIUS[0],HOLE_RADIUS[0],HOLE_RADIUS[0]),
        (WIDTH-HOLE_RADIUS[0],HEIGHT-HOLE_RADIUS[0],WIDTH+HOLE_RADIUS[0],HEIGHT+HOLE_RADIUS[0]),
        (-HOLE_RADIUS[1],HEIGHT//2-HOLE_RADIUS[1],HOLE_RADIUS[1],HEIGHT//2+HOLE_RADIUS[1]),
        (WIDTH-HOLE_RADIUS[1],HEIGHT//2-HOLE_RADIUS[1],WIDTH+HOLE_RADIUS[1],HEIGHT//2+HOLE_RADIUS[1])]
- 
+
 def draw_field(canvas,lgame):
   canvas.delete(*canvas.find_all())
   canvas.create_rectangle(0,0,WIDTH, HEIGHT, fill=BORDER_COLOR)
@@ -65,7 +65,7 @@ def make_move(lgame,number):
   position = Point(
       game.position.x + (dx*v[number])*bool(v[number]>=0),
       game.position.y + (dy*v[number])*bool(v[number]>=0))
-  direction = [dx,dy] 
+  direction = [dx,dy]
   if not (RADIUS[number] < position.x < WIDTH-RADIUS[number]-5):
     angle=180-angle
   if not (RADIUS[number] < position.y < HEIGHT-RADIUS[number]-5):
@@ -76,16 +76,17 @@ def make_move(lgame,number):
     x1=lgame[i].position.x
     y1=lgame[i].position.y
     if  (((x-x1)**2+(y-y1)**2)**0.5)<=20 and i!=number and lgame[i].active:
-        angle+=180             
+        angle+=180
+        lgame[i] = lgame[i]._replace(angle = lgame[i].angle+180)
   v[number]+=a[number]
   active=True
   for i in range(0,len(HOLES)):
     if distance(position.x, position.y, (HOLES[i][0]+HOLES[i][2])/2,(HOLES[i][1]+HOLES[i][3])/2)<=HOLE_RADIUS[1]*0.9*(bool(i>=4))+HOLE_RADIUS[0]*0.9*(bool(i<4)):
-      active=False 
+      active=False
   angle+=0
   return Ball(position, angle,active)
- 
- 
+
+
 if __name__ == "__main__":
   c = tkinter.Canvas(width=WIDTH-2, height=HEIGHT-2)
   c.pack()

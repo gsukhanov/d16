@@ -6,9 +6,9 @@ for i in range(1,n+1):
 x = a
 for i in range(n):
   for m in range(n):
-    if b[m] < b[m + 1]:
-      b[m] = 1
-      b[m + 1] = 0    
+    if x[m] < x[m + 1]:
+      x[m] = 1
+      x[m + 1] = 0    
 k=0
 while a != x:
   p = 0

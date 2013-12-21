@@ -4,7 +4,7 @@ for i in range(1,n+1):
   y = int(input())
   a.append(y)
 x = a
-for i in range(n):
+for v in range(n):
   for m in range(n):
     if x[m] < x[m + 1]:
       x[m] = 1

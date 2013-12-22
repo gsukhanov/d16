@@ -4,77 +4,83 @@ from collections import namedtuple
 Bridge = namedtuple("Bridge", ["xpos", "ypos", "player", "direction"])
 dirct = 0
 
-print("Input the size of the cage in dots width; from 6 to 15")
+print("Input the size of the cage in dots width; from 6 to 15. Then input cell size")
+cell = 30
 size = 8
 if size < 6 or size > 15:
 	print("Wrong size, restart the game")
-c = tkinter.Canvas(width = 100 + 50 * size, height = 100 + 50 * size)
+c = tkinter.Canvas(width = 60 + (2 * cell * size), height = 60 + (2 * cell * size) )
 c.pack()
 
-def cancrea(c):
-	x = 50
-	y= 50
+def cancrea(c): #canvas created
+	x = cell
+	y = 2 * cell
 	for i in range (size + 1):
-		x = 50
+		x = 3 * cell
 		for i2 in range (size):
-			c.create_oval(x + 23, y - 2, x + 27, y + 2, fill = "blue")
-			x += 50
-		y += 50
+			c.create_oval(x + cell - 2, y - 2, x + cell + 2, y + 2, fill = "blue")
+			x += 2 * cell
+		y += 2 * cell
 
-	x = 25
-	y= 75
+	x = 2 * cell
+	y = cell
 	for i in range (size + 1):
-		y = 75
+		y = 3 * cell
 		for i2 in range (size):
-			c.create_oval(x + 23, y - 2, x + 27, y + 2, fill = "red")
-			y += 50
-		x += 50
+			c.create_oval(x + cell - 2, y - 2, x + cell + 2, y + 2, fill = "red")
+			y += 2 * cell
+		x += 2 * cell
 
-def bridgeit(b , c):
+def bridgeit(b , c): #drawing a bridge
 	if b.direction=="hor":
-		c.create_line(b.xpos , b.ypos , b.xpos + 50 , b.ypos , fill = "black" , width = 5)
-		c.create_line(b.xpos , b.ypos , b.xpos + 50 , b.ypos , fill = b.player , width = 3)
+		c.create_line(b.xpos , b.ypos , b.xpos + 2 * cell , b.ypos , fill = "black" , width = 5)
+		c.create_line(b.xpos , b.ypos , b.xpos + 2 * cell , b.ypos , fill = b.player , width = 3)
 	else:
-		c.create_line(b.xpos , b.ypos , b.xpos , b.ypos + 50 , fill = "black" , width = 5)
-		c.create_line(b.xpos , b.ypos , b.xpos , b.ypos + 50 , fill = b.player , width = 3)
+		c.create_line(b.xpos , b.ypos , b.xpos , b.ypos + 2 * cell , fill = "black" , width = 5)
+		c.create_line(b.xpos , b.ypos , b.xpos , b.ypos + 2 * cell , fill = b.player , width = 3)
 
-def click(event):
+def click(event): #creating new bridge information
 	global playermove
 	global dirct
 	c = event.widget
-	xp = event.x - 25
-	yp = event.y - 50
-	nex = xp // 25
-	ney = yp // 25
+	nex = (event.x - cell) // (2 * cell)
+	ney = (event.y - 2 * cell) // (2 * cell)
 	print(nex, ney)
 	sumx = nex + ney
-	sumy = nex - ney + 2
-	if int((sumx + sumy)) % 4 == 0 and int((sumx - sumy)) % 4 == 0:
-		if playermove == "red":
-			dirct = "vert"
-			nex += - 1
-			ney += 1
-		if playermove == "blue":
-			dirct = "hor"
-	if int((sumx + sumy)) % 4 == 2 and int((sumx - sumy)) % 4 == 2:
-		if playermove == "blue":
-			dirct = "vert"
+	sumy = nex - ney
+	if (sumx + sumy) % 2 == 0:
 		if playermove == "red":
 			dirct = "hor"
-	b = Bridge(nex * 25 + 25 , ney * 25 + 50 , playermove , dirct)
-	bridges.append(b)
+			nex = nex * 2
+			ney = ney * 2 + 2
+		if playermove == "blue":
+			dirct = "vert"
+			nex = nex * 2 + 1
+			ney = ney * 2 + 1
+	else:
+		if playermove == "blue":
+			dirct = "hor"
+			nex = nex * 2 + 1
+			ney = ney * 2 + 1
+		if playermove == "red":
+			dirct = "vert"
+			ney = ney * 2 + 2
+	#bridge direction and its vertices found and saved
+	b = Bridge(nex * cell + cell , ney * cell + cell , playermove , dirct)
 	bridgeit(b , c)
-	#print(xp , yp , nex , ney , b.xpos , b.ypos)
-	if playermove == "red":
+	if playermove == "red": #this changes the player
+		red_bridges.append(b)
 		playermove = "blue"
 	else:
+		blue_bridges.append(b)
 		playermove = "red"
 
 cancrea(c)
 
 playermove = "red"
-c.bind("<Button-1>", click)
+c.bind("<Button-1>", click) #finally a bridge drawed
 
-bridges = []
+red_bridges = []
+blue_bridges = []
 
 c.mainloop()

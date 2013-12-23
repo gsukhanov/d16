@@ -1,9 +1,16 @@
-from tkinter import Canvas;
+from tkinter import Canvas, Tk, Button;
 import plistlib;
 kSize=10;
 kBoardWidth = kBoardHeight = 100;
 canvas = Canvas(width=kBoardWidth*kSize,height=kBoardHeight*kSize);
 canvas.pack();
+controlPanel = Tk();
+startButton = Button(master=controlPanel, text="Start");
+startButton.grid(column=0,row=0);
+loadButton = Button(master=controlPanel, text="Load");
+loadButton.grid(column=0,row=1);
+saveButton = Button(master=controlPanel, text="Save");
+saveButton.grid(column=0,row=2);
 deleteList = [];
 board = [];
 nboard = [];
@@ -76,15 +83,23 @@ def loop(*args):
 		redraw();
 		canvas.after(10, func=loop);
 
-def switchState(*args):
+def switchState(event):
 	global state;
 	state = not state;
 	if state:
+		event.widget.configure(text = "Stop");
 		loop();
+	else:
+		event.widget.configure(text = "Start");
 def save(*args):
 	plistlib.writePlist(board, "sav.plist");
+def load(*args):
+	global board;
+	board = plistlib.readPlist("sav.plist");
+	redraw();
 
 canvas.bind("<Button-1>",diviveIntervention);
-canvas.bind("<Button-3>",switchState);
-canvas.bind("<Button-2>", save);
+startButton.bind("<Button-1>",switchState);
+loadButton.bind("<Button-1>",load);
+saveButton.bind("<Button-1>",save);
 canvas.mainloop();

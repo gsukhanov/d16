@@ -1,4 +1,5 @@
 from tkinter import Canvas;
+import plistlib;
 kSize=10;
 kBoardWidth = kBoardHeight = 100;
 canvas = Canvas(width=kBoardWidth*kSize,height=kBoardHeight*kSize);
@@ -80,7 +81,10 @@ def switchState(*args):
 	state = not state;
 	if state:
 		loop();
+def save(*args):
+	plistlib.writePlist(board, "sav.plist");
 
 canvas.bind("<Button-1>",diviveIntervention);
 canvas.bind("<Button-3>",switchState);
+canvas.bind("<Button-2>", save);
 canvas.mainloop();

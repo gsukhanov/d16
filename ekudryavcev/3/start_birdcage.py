@@ -9,7 +9,7 @@ cell = 30
 size = 8
 if size < 6 or size > 15:
 	print("Wrong size, restart the game")
-c = tkinter.Canvas(width = 60 + (2 * cell * size), height = 60 + (2 * cell * size) )
+c = tkinter.Canvas(width = 100 + (2 * cell * size), height = 100 + (2 * cell * size) )
 c.pack()
 
 def cancrea(c): #canvas created
@@ -44,27 +44,28 @@ def click(event): #creating new bridge information
 	global dirct
 	c = event.widget
 	nex = (event.x - cell) // (2 * cell)
-	ney = (event.y - 2 * cell) // (2 * cell)
+	ney = (event.y - cell) // (2 * cell)
 	print(nex, ney)
 	sumx = nex + ney
 	sumy = nex - ney
-	if (sumx + sumy) % 2 == 0:
+	if sumx % 2 == 0 and sumy % 2 == 0:
 		if playermove == "red":
 			dirct = "hor"
 			nex = nex * 2
-			ney = ney * 2 + 2
+			ney = ney * 2
 		if playermove == "blue":
 			dirct = "vert"
 			nex = nex * 2 + 1
-			ney = ney * 2 + 1
-	else:
+			ney = ney * 2 - 1
+	if sumx % 2 == 1 and sumy % 2 == 1:
 		if playermove == "blue":
 			dirct = "hor"
 			nex = nex * 2 + 1
 			ney = ney * 2 + 1
 		if playermove == "red":
 			dirct = "vert"
-			ney = ney * 2 + 2
+			ney = ney * 2
+			nex = nex * 2 + 2
 	#bridge direction and its vertices found and saved
 	b = Bridge(nex * cell + cell , ney * cell + cell , playermove , dirct)
 	bridgeit(b , c)

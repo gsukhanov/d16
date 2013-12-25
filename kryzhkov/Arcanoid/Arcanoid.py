@@ -6,17 +6,38 @@ from collections import namedtuple
 WIDTH=660
 HEIGHT=660
 FPS = 1000
-RADIUS = 10
-  
+RADIUS = 1
+COUNT_WIDTH = 22
+KOLVOHEIGHT = 3
+cell_width = WIDTH // COUNT_WIDTH
+cell_height = cell_width
  
 Point = namedtuple("Point", ["x", "y"])
-Game = namedtuple("Game", ["position", "direction","blocks","field"])
+Game = namedtuple("Game", ["position", "direction","blocks"])     
+
+def in_block(block, position):
+  x0 = block.x * cell_width
+  x1 = x0 + cell_width
+  y0 = block.y * cell_width
+  y1 = y0 + cell_width
+  if (x0 < position.x+RADIUS < x1) and (y0 < position.y < y1) or (x0 < position.x-RADIUS < x1) and (y0 < position.y < y1):
+    return "horizontal"
+  elif (x0 < position.x < x1) and (y0 < position.y+RADIUS < y1) or (x0 < position.x < x1) and (y0 < position.y-RADIUS < y1):
+    return "vertical"
+  else:
+    return None
+def out_of_field(position):
+  if not (RADIUS < position.x < WIDTH-RADIUS):
+    return  "horizontal"
+  if not (RADIUS < position.y < HEIGHT-RADIUS):
+    return "vertical"
+  else:
+    return None
 
 def draw_field(canvas, game):
-  cell_width = WIDTH // 22
-  cell_height = cell_width
+
   canvas.delete(*canvas.find_all())
-  canvas.create_rectangle(
+  canvas.create_oval(
       game.position.x-RADIUS,
       game.position.y-RADIUS,
       game.position.x+RADIUS,
@@ -29,8 +50,8 @@ def draw_field(canvas, game):
         cell_height * (point.y + 1),
         fill=color)
 
-  for i in range(22):
-    for j in range(3):
+  for i in range(COUNT_WIDTH):
+    for j in range(KOLVOHEIGHT):
       draw_cell(Point(i, j),"white")
   for p in game.blocks:
     draw_cell(p, "blue")
@@ -41,49 +62,33 @@ def make_move(game):
       game.position.y + game.direction.y)
   direction = game.direction
   blocks = game.blocks
-  field = game.field
-  if not (RADIUS < position.x < WIDTH-RADIUS):
-    direction = direction._replace(x=-direction.x)
-  if not (RADIUS < position.y < HEIGHT-RADIUS):
+  move = out_of_field(position)
+  if move == "vertical":
     direction = direction._replace(y=-direction.y)
-  if  (position.y+RADIUS in blocks) and not position.y+RADIUS in field:
-    direction = direction._replace(y=-direction.y)
-    return Game(
-        position=position,
-        direction=direction,  
-        blocks=(game.blocks - frozenset([position])),
-        field=(position,) + game.field)
-  if  position.y-RADIUS in blocks and not position.y-RADIUS in field:
-    direction = direction._replace(y=-direction.y)
-    return Game(
-        position=position,
-        direction=direction,  
-        blocks=(game.blocks - frozenset([position])),
-        field=(position,) + game.field)
-  if  position.x+RADIUS in blocks and not position.x+RADIUS in field:
+  if move == "horizontal":
     direction = direction._replace(x=-direction.x)
-    return Game(
-        position=position,
-        direction=direction,  
-        blocks=(game.blocks - frozenset([position])),
-        field=(position,) + game.field)
-  if  position.x-RADIUS in blocks and not position.x-RADIUS in field:
-    direction = direction._replace(x=-direction.x)
-    return Game(
-        position=position,
-        direction=direction,  
-        blocks=(game.blocks - frozenset([position])),
-        field=(position,) + game.field)
+  for y in range(3):
+    for x in range(22):
+      in_block(blocks[x,y],position)
+      if in_block == "vertical":
+        direction = direction._replace(y=-direction.y)
+        return Game(
+              position = position,
+              direction = direction,
+              blocks = game.blocks - frozenset([x.y])) 
+      elif  in_block() == "horizontal" :
+        direction = direction._replace(x=-direction.x)
+        return Game(
+              position = position,
+              direction = direction,
+              blocks = game.blocks - frozenset([x.y]))   
+
   return Game(
-        position=position,
-        direction=direction,
-        blocks=blocks,
-        field=field)
+        position = position,
+        direction = direction,
+        blocks = blocks)
  
         
- 
-
-
 c = tkinter.Canvas(width=WIDTH, height=HEIGHT)
 c.pack()
 c.focus_set()
@@ -96,12 +101,10 @@ def loop():
  
 loop.game = Game(Point(WIDTH/2,HEIGHT/2),
     Point(1,2),
-    blocks=(
+    blocks = frozenset(
         [Point(x, y)
         for y in range(3)
-          for x in range(22)]),
-    field=frozenset())
+          for x in range(22)]))
  
 loop()
 c.mainloop()
-

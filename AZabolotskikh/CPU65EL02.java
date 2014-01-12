@@ -1,4 +1,4 @@
-package to.zaxdo.sitechat;
+package to.zaxdo.cpuemu;
 
 public class CPU65EL02 {
 	private byte[] memory;

@@ -1,0 +1,133 @@
+import tkinter
+import sys
+import random
+import math
+from collections import namedtuple
+WIDTH=440
+HEIGHT=660
+FPS = 1000
+RADIUS = [10,10,10,10,10,10,10]
+HOLE_FILL='black'
+FIELD_COLOR='green'
+BORDER_COLOR='dark green'
+HOLE_RADIUS=[33,24]
+r=17
+R=10
+V=[0,0,0,0,0,0,0]
+u=-0.0011
+a=[u,u,u,u,u,u,u,u]
+v=V
+stick=False
+turn1=False
+l=200
+angle=-145
+mx=[0,0]
+my=[0,0]
+FILL=['red','blue','white','brown','yellow','orange','grey']
+FILL1=['white','white','white','white','white','white','red']
+fill=FILL1
+
+Point = namedtuple("Point", ["x", "y"])
+Ball = namedtuple("Game", ["position", "angle","active"])
+HOLES=[(-HOLE_RADIUS[0],-HOLE_RADIUS[0],HOLE_RADIUS[0],HOLE_RADIUS[0]),
+       (WIDTH-HOLE_RADIUS[0],-HOLE_RADIUS[0],WIDTH+HOLE_RADIUS[0],HOLE_RADIUS[0]),
+       (-HOLE_RADIUS[0],HEIGHT-HOLE_RADIUS[0],HOLE_RADIUS[0],HEIGHT+HOLE_RADIUS[0]),
+       (WIDTH-HOLE_RADIUS[0],HEIGHT-HOLE_RADIUS[0],WIDTH+HOLE_RADIUS[0],HEIGHT+HOLE_RADIUS[0]),
+       (-HOLE_RADIUS[1],HEIGHT//2-HOLE_RADIUS[1],HOLE_RADIUS[1],HEIGHT//2+HOLE_RADIUS[1]),
+       (WIDTH-HOLE_RADIUS[1],HEIGHT//2-HOLE_RADIUS[1],WIDTH+HOLE_RADIUS[1],HEIGHT//2+HOLE_RADIUS[1])]
+def activate(event):
+    global stick
+    l=stick
+    if l:
+        stick=False
+    else:
+        stick=True
+def koord(event):
+    global mx
+    global my
+    mx=[mx[1],event.x]
+    my=[my[1],event.y]
+def turn(event):
+    global turn1
+    if turn1:
+        turn1=False
+    else:
+        turn1=True
+def draw_field(canvas,lgame):
+    canvas.delete(*canvas.find_all())
+    canvas.create_rectangle(0,0,WIDTH, HEIGHT, fill=BORDER_COLOR)
+    canvas.create_rectangle(5,5,WIDTH-5, HEIGHT-5, fill=FIELD_COLOR)
+    for i in range(len(HOLES)):
+        canvas.create_oval(HOLES[i][0],HOLES[i][1],HOLES[i][2],HOLES[i][3],fill=HOLE_FILL)
+    for i in range(0,len(lgame)):
+        if lgame[i].active:
+            canvas.create_oval(
+              lgame[i].position.x-RADIUS[i],
+              lgame[i].position.y-RADIUS[i],
+              lgame[i].position.x+RADIUS[i],
+              lgame[i].position.y+RADIUS[i],
+              fill=fill[i])
+    if stick:
+        c.create_line(mx[1],my[1],mx[1]+l**math.sin(angle/57.295779513),my[1]-l*math.cos(angle/57.295779513),width=7,fill='brown')
+def distance (x1,y1,x2,y2):
+    return ((x1-x2)**2+(y1-y2)**2)**0.5
+def make_move(lgame,number):
+    game=lgame[number]
+    angle=game.angle
+    global v
+    dx=math.cos(game.angle/57.295779513)
+    dy=-math.sin(game.angle/57.295779513)
+    position = Point(
+        game.position.x + (dx*v[number])*bool(v[number]>=0),
+        game.position.y + (dy*v[number])*bool(v[number]>=0))
+    direction = [dx,dy]
+    if distance(position.x,position.y,mx[1],my[1])<=13 and stick:
+            v[number]+=1
+            angle=math.atan((my[1]-my[0])/(mx[1]-mx[0]+bool(mx[1]==mx[0])))*57.295779513    
+    if not (RADIUS[number] < position.x < WIDTH-RADIUS[number]-5):
+        angle=180-angle
+    if not (RADIUS[number] < position.y < HEIGHT-RADIUS[number]-5):
+        angle=-angle
+    for i in range(0,len(lgame)):
+        x=position.x
+        y=position.y
+        x1=lgame[i].position.x
+        y1=lgame[i].position.y
+        if  (((x-x1)**2+(y-y1)**2)**0.5)<=20 and i!=number and lgame[i].active and lgame[number].active:
+            angle+=180
+            lgame[i] = lgame[i]._replace(angle = lgame[i].angle)
+            v[number],v[i]=v[i],v[number]
+    v[number]+=a[number]
+    active=True
+    for i in range(0,len(HOLES)):
+        if distance(position.x, position.y, (HOLES[i][0]+HOLES[i][2])/2,(HOLES[i][1]+HOLES[i][3])/2)<=HOLE_RADIUS[1]*0.9*(bool(i>=4))+HOLE_RADIUS[0]*0.9*(bool(i<4)):
+            active=False
+    return Ball(position, angle,active)
+if __name__ == "__main__":
+    c = tkinter.Canvas(width=WIDTH-2, height=HEIGHT-2)
+    c.pack()
+    c.focus_set()
+def loop():
+    global angle
+    c.bind('<Button-1>',activate)
+    c.bind('<Motion>',koord)
+    c.bind('<Button-2>',turn)
+    if turn1:
+        angle+=1
+    global lgame
+    draw_field(c, lgame)
+    for i in range(0,len(lgame)):
+        lgame[i] = make_move(lgame,i)
+        if not lgame[i].active:
+            v[i]=0
+            a[i]=0
+    c.after(1000 // FPS, loop)
+lgame = [Ball(Point(WIDTH/2,HEIGHT/3), 10,True),
+        Ball(Point(WIDTH/2-2*r,HEIGHT/3-2*r), 20,True),
+        Ball(Point(WIDTH/2+2*r,HEIGHT/3-2*r), 30,True),
+        Ball(Point(WIDTH/2-r,HEIGHT/3-r), 40,True),
+        Ball(Point(WIDTH/2+r,HEIGHT/3-r), 50,True),
+        Ball(Point(WIDTH/2,HEIGHT/3-2*r), 60,True),
+        Ball(Point(WIDTH*0.5,HEIGHT*0.7), 90,True)]
+loop()
+c.mainloop()

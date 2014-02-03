@@ -1,15 +1,15 @@
 name = str(input())
 k = int(input())
 m = 0
-string = name
 f_read = open(name, 'r')
-for line in f_read:
-    line = line.strip()
-    for i in range(len(string)):
-    	s = name.find(" ")
-    	if k == s:
-    		m = m + 1
-    	string = string[s:]
-    print(m)
-f_read.close() 
-
+for line in f_read.readlines():
+	line = line.strip()
+	print(line)
+	for i in range(len(line)):
+		s = line.find(" ")
+		if k == s:
+			m = m + 1
+		line = line[(s + 1):]
+print(s)
+print(m)
+f_read.close()

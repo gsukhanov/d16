@@ -1,0 +1,19 @@
+n = int(input())
+k = int(input())
+A = [[0] * k for i in range(n)]
+def pascal(a, b):
+	c = 1
+	for i in range(b + 1, a + 1):
+		c *= i
+	d = 1
+	for i in range(1, a - b + 1):
+		d *= i
+	e = c // d
+	f = e * pow(2, k)
+	return f
+for i in range(n):
+	for j in range(k):
+		if j <= i:
+			A[i][j] = pascal(i, j)
+print(A[n][k])
+print(A)

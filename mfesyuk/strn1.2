@@ -1,0 +1,6 @@
+a = input()
+counter = 0
+with open('example_read.txt', 'r') as f_read:
+	for line in f_read:
+		counter += line.count(a)
+	print(counter)

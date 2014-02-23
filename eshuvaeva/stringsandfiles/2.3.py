@@ -3,9 +3,14 @@ file2 = str(input())
 f_read = open(file1, 'r')
 for line in f_read.readlines():
 	line = line.strip()
-	print(line)
 	r = line.translate(str.maketrans({"o":"0"}))
-print(r)
 f_read.close()
+f_read = open(file2, 'w')
+f_read.writelines(r)
+f_read.close()
+
 f_read = open(file2, 'r')
-f_read = r
+for line in f_read.readlines():
+	line = line.strip()
+	print(line)
+f_read.close()

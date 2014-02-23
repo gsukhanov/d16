@@ -1,0 +1,8 @@
+n = int(input())
+counter = 0
+with open('example_read.txt', 'r') as f_read:
+	for line in f_read:
+		if line.find(" ") = n:
+			counter += 1
+			line = line[line.find(" ") + 1:]
+	print(counter)

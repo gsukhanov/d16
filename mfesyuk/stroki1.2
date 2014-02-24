@@ -1,0 +1,10 @@
+a = input("введите имя файла: ")
+k = input("введите слово: ")
+counter = 0
+with open(a, 'r') as f_read:
+	for line in f_read:
+		words = line.split()
+		for i in range(len(words)):
+			if words[i] == k:
+				counter += 1
+print(counter)

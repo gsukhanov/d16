@@ -1,0 +1,18 @@
+a = int(input())
+b = []
+for i in range(a):
+	o = list(map(int, input().split()))
+	b.append(o)
+
+for i in range(len(b)):
+	m = i
+	for j in range(i, len(b)):
+		if b[j][1] > b[m][1]:
+			m = j 
+
+		if b[j][1] == b[m][1]:
+			if b[j][0] < b[m][0]:
+				m = j
+	b[m],b[i] = b[i], b[m]
+for m in range(len(b)):
+	print(b[m][0], b[m][1])

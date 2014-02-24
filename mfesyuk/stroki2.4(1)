@@ -1,0 +1,11 @@
+a = input("введите имя файла: ")
+with open('write.txt', 'w') as f_write:
+	with open(a, 'r') as f_read:
+		for line in f_read:
+			words = line.split()
+			for i in range(0, len(words) - 1, 2):
+				if words[i] == words[i + 1]:
+					f_write.write(words[i + 1] + " ")
+				else:
+					f_write.write(words[i] + " ")
+					f_write.write(words[i + 1] + " ")

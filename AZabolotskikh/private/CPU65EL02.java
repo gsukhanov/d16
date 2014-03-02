@@ -1,4 +1,4 @@
-package to.zaxdo.cpuemu;
+package to.zaxdo.sitechat;
 
 public class CPU65EL02 {
 	private byte[] memory;
@@ -73,6 +73,7 @@ public class CPU65EL02 {
 		i |= readByte(loc + 1) << 8;
 		return i;
 	}
+
 	private void pushByte(int data) {
 		if (fE)
 			rSP = (rSP - 1 & 0xFF | rSP & 0xFF00);
@@ -129,6 +130,7 @@ public class CPU65EL02 {
 		i |= readByte(rPC) << 8; mIncPC();
 		return i + rX & 0xFFFF;
 	}
+
 	private int getIndexedIndirectAddress()
 	{
 		int i = readByte(rPC) + rX & 0xFF;mIncPC();
@@ -183,10 +185,10 @@ public class CPU65EL02 {
 	}
 
 	private int negativeMaskM() {
-		return fM ? 1<<7 : 1<<15; 
+		return fM ? 255 : 65535; 
 	} 
 	private int overflowMaskM() {
-		return fM ? (1<<8)-1 : (1<<16)-1; 
+		return fM ? 128 : 32768; 
 	}
 	//This is for all of the instructions
 	private void instruction_brk() {
@@ -197,6 +199,11 @@ public class CPU65EL02 {
 	}
 	private void instruction_or(int input) {
 		rA |= input;
+		fZ = rA == 0;
+		fN = (rA & negativeMaskM()) > 0;
+	}
+	private void instruction_and(int input) {
+		rA &= input;
 		fZ = rA == 0;
 		fN = (rA & negativeMaskM()) > 0;
 	}
@@ -254,10 +261,10 @@ public class CPU65EL02 {
 		else
 			pushWordR(rX);
 	}
-	private void instruction_jsr()
+	private void instruction_jsr(int addr)
 	{
 		pushWord(rPC + 1);
-		rPC = getAbsoluteAddress();
+		rPC = addr;
 	}
 	private void instruction_mul(int input) {
 		long i;
@@ -406,10 +413,40 @@ public class CPU65EL02 {
 			instruction_rhx();
 			break;
 		case 0x20:
-			instruction_jsr();
+			instruction_jsr(getAbsoluteAddress());
 			break;
-			
-		default:
+		case 0xFC:
+			instruction_jsr(readShort(getAbsoluteIndexedXAddress()));
+			break;
+		case 0x21:
+			instruction_and(readWord(getIndexedIndirectAddress()));
+			break;
+		case 0x23:
+			instruction_and(readWord(getStackRelativeAddress()));
+			break;
+		case 0x25:
+			instruction_and(readWord(getZeroPageAddress()));
+			break;
+		case 0x27:
+			instruction_and(readWord(getRStackRelativeAddress()));
+			break;
+		case 0x29:
+			instruction_and(readWord());
+			break;
+		case 0x2D:
+			instruction_and(readWord(getAbsoluteAddress()));
+			break;
+		case 0x31:
+			instruction_and(readWord(getIndirectIndexedAddress()));
+			break;
+		case 0x32:
+			instruction_and(readWord(getIndirectAddress()));
+			break;
+		case 0x33:
+			instruction_and(readWord(getStackRealativeIndirectIndexedAddress()));
+			break;
+		case 0x35:
+			instruction_and(readWord(getZeroPageXAddress()));
 			break;
 		}
 	}

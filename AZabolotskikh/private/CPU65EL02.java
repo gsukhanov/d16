@@ -1,4 +1,4 @@
-package to.zaxdo.sitechat;
+package to.zaxdo.cpuemu;
 
 public class CPU65EL02 {
 	private byte[] memory;
@@ -295,6 +295,19 @@ public class CPU65EL02 {
 	private void instruction_clc() {
 		fC = false;
 	}
+	private void instruction_ent() {
+		pushWordR(rI);
+		rI = (rPC + 2);
+		rPC = readShort(rPC);
+	}
+	private void instruction_bit(int input) {
+		fO = ((input & (fM ? 0x40 : 0x4000) ) > 0);
+		fN = ((input & (fM ? 0x80 : 0x8000)) > 0);
+		fZ = ((input & rA) > 0);
+	}
+	private void instruction_bit() {
+		fZ = ((readWord() & rA) == 0);
+	}
 	private void processInstruction() {
 		int instruction = readByte(rPC);
 		mIncPC();
@@ -447,6 +460,33 @@ public class CPU65EL02 {
 			break;
 		case 0x35:
 			instruction_and(readWord(getZeroPageXAddress()));
+			break;
+		case 0x37:
+			instruction_and(readWord(getRStackRealativeIndirectIndexedAddress()));
+			break;
+		case 0x39:
+			instruction_and(readWord(getAbsoluteIndexedYAddress()));
+			break;
+		case 0x3D:
+			instruction_and(readWord(getAbsoluteIndexedXAddress()));
+			break;
+		case 0x22:
+			instruction_ent();
+			break;
+		case 0x24:
+			instruction_bit(readWord(getZeroPageAddress()));
+			break;
+		case 0x2C:
+			instruction_bit(readWord(getAbsoluteAddress()));
+			break;
+		case 0x34:
+			instruction_bit(readWord(getZeroPageXAddress()));
+			break;
+		case 0x3C:
+			instruction_bit(readWord(getAbsoluteIndexedXAddress()));
+			break;
+		case 0x89:
+			instruction_bit();
 			break;
 		}
 	}

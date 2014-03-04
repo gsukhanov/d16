@@ -99,7 +99,7 @@ public class CPU65EL02 {
 		pushByteR(data >> 8);
 		pushByteR(data & 0xFF);
 	}
-	private int flagsToInt()
+	private int packFlags()
 	{
 		int result = fN ? 1 : 0;
 		result <<= 1;
@@ -117,6 +117,34 @@ public class CPU65EL02 {
 		result <<= 1;
 		result += fC ? 1 : 0;
 		return result;
+	}
+	private void unpackFlags(int packed) {
+		fC = ((packed & 0x1) > 0);
+		fZ = ((packed & 0x2) > 0);
+		fID = ((packed & 0x4) > 0);
+		fD = ((packed & 0x8) > 0);
+		boolean newM = (packed & 0x20) > 0;
+		fO = ((packed & 0x40) > 0);
+		fN = ((packed & 0x80) > 0);
+
+		if (fE) {
+			fX = fM = false;
+		} else {
+			fX = ((packed & 0x10) > 0);
+			if (this.fX)
+			{ 
+				rX &= 255;
+				rY &= 255;
+			}
+			if (newM != fM) {
+				if (newM) {
+					rB = (rA >> 8); rA &= 255;
+				} else {
+					rA |= rB << 8;
+				}
+				fM = newM;
+			}
+		}
 	}
 
 	//This is for all of 65el02 addressing modes
@@ -185,15 +213,37 @@ public class CPU65EL02 {
 	}
 
 	private int negativeMaskM() {
-		return fM ? 255 : 65535; 
-	} 
+		return fM ? 128 : 32768;
+	}
+	private int negativeMaskX() {
+		return fX ? 128 : 32768;
+	}
 	private int overflowMaskM() {
-		return fM ? 128 : 32768; 
+		return fM ? 255 : 65535;
+	}
+	private int popByte() {
+		int ret = readByte(rSP);
+		if (fE)
+			rSP = (rSP + 1 & 0xFF | rSP & 0xFF00);
+		else {
+			rSP = (rSP + 1 & 0xFFFF);
+		}
+		return ret;
+	}
+	private int popByteR() {
+		int ret = readByte(rR);
+		rR = (rR + 1 & 0xFFFF);
+		return ret;
+	}
+	private int popWordR() {
+	    int ret = popByteR();
+	    ret |= (popByteR() << 8);
+	    return ret;
 	}
 	//This is for all of the instructions
 	private void instruction_brk() {
 		pushWord(rPC);
-		pushByte(flagsToInt());
+		pushByte(packFlags());
 		fBRK = true;
 		rPC = brkVector;
 	}
@@ -234,7 +284,7 @@ public class CPU65EL02 {
 		writeLocation(input, i);
 	}
 	private void instruction_php() {
-		pushByte(flagsToInt());
+		pushByte(packFlags());
 	}
 	private void instruction_rhi() {
 		pushWordR(rI);
@@ -256,7 +306,7 @@ public class CPU65EL02 {
 	}
 	private void instruction_rhx()
 	{
-		if (this.fX) 
+		if (this.fX)
 			pushByteR(rX);
 		else
 			pushWordR(rX);
@@ -307,6 +357,29 @@ public class CPU65EL02 {
 	}
 	private void instruction_bit() {
 		fZ = ((readWord() & rA) == 0);
+	}
+	private void instruction_rol(int input) {
+		int i = readWord(input);
+		int n = (i << 1 | (fC ? 1 : 0)) & overflowMaskM();
+		fC = ((i & negativeMaskM()) > 0);
+		fN = ((n & negativeMaskM()) > 0);
+		fZ = (n == 0);
+		writeLocation(input, n);
+	}
+	private void instruction_rol() {
+		int n = (rA << 1 | (fC ? 1 : 0)) & overflowMaskM();
+		fC = ((rA & negativeMaskM()) > 0);
+		rA = n;
+		fN = ((rA & negativeMaskM()) > 0);
+		fZ = (rA == 0);
+	}
+	private void instruction_plp() {
+		unpackFlags(popByte());
+	}
+	private void instruction_rli() {
+		rI = popWordR();
+	    fN = ((rI & negativeMaskX()) > 0);
+	    fZ = (rI == 0);
 	}
 	private void processInstruction() {
 		int instruction = readByte(rPC);
@@ -487,6 +560,27 @@ public class CPU65EL02 {
 			break;
 		case 0x89:
 			instruction_bit();
+			break;
+		case 0x26:
+			instruction_rol(getZeroPageAddress());
+			break;
+		case 0x2A:
+			instruction_rol();
+			break;
+		case 0x2E:
+			instruction_rol(getAbsoluteAddress());
+			break;
+		case 0x36:
+			instruction_rol(getZeroPageXAddress());
+			break;
+		case 0x3E:
+			instruction_rol(getAbsoluteIndexedXAddress());
+			break;
+		case 0x28:
+			instruction_plp();
+			break;
+		case 0x2B:
+			instruction_rli();
 			break;
 		}
 	}

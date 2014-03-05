@@ -236,9 +236,9 @@ public class CPU65EL02 {
 		return ret;
 	}
 	private int popWordR() {
-	    int ret = popByteR();
-	    ret |= (popByteR() << 8);
-	    return ret;
+		int ret = popByteR();
+		ret |= (popByteR() << 8);
+		return ret;
 	}
 	//This is for all of the instructions
 	private void instruction_brk() {
@@ -378,8 +378,21 @@ public class CPU65EL02 {
 	}
 	private void instruction_rli() {
 		rI = popWordR();
-	    fN = ((rI & negativeMaskX()) > 0);
-	    fZ = (rI == 0);
+		fN = ((rI & negativeMaskX()) > 0);
+		fZ = (rI == 0);
+	}
+	private void instruction_bmi() {
+		if (fN) {
+			branch();
+		}
+	}
+	private void instruction_sec() {
+		fC = true;
+	}
+	private void instruction_dec() {
+		rA = (rA - 1 & overflowMaskM());
+		fN = ((rA & negativeMaskM()) > 0);
+		fZ = (rA == 0);
 	}
 	private void processInstruction() {
 		int instruction = readByte(rPC);
@@ -486,6 +499,7 @@ public class CPU65EL02 {
 			break;
 		case 0xFE:
 			instruction_inc(getAbsoluteIndexedXAddress());
+			break;
 		case 0xF6:
 			instruction_inc(getZeroPageXAddress());
 			break;
@@ -581,6 +595,15 @@ public class CPU65EL02 {
 			break;
 		case 0x2B:
 			instruction_rli();
+			break;
+		case 0x30:
+			instruction_bmi();
+			break;
+		case 0x38:
+			instruction_sec();
+			break;
+		case 0x3A:
+			instruction_dec();
 			break;
 		}
 	}

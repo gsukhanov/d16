@@ -80,14 +80,21 @@ public class CPU65EL02 {
 		else {
 			rSP = (rSP - 1 & 0xFFFF);
 		}
-		writeLocation(rSP, data);
+		writeByte(rSP, data);
 	}
 	private void pushByteR(int data) {
 		rR = (rR - 1 & 0xFFFF);
-		writeLocation(rR, data);
+		writeByte(rR, data);
 	}
-	private void writeLocation(int loc, int data) {
+	private void writeByte(int loc, int data) {
 		//TODO: do something
+	}
+	private void writeWord(int addr, int data) {
+		writeByte(addr, data);
+		if (!this.fM)
+		{
+			writeByte(addr + 1, data >> 8); 
+		}
 	}
 	private void pushWord(int data)
 	{
@@ -148,12 +155,12 @@ public class CPU65EL02 {
 	}
 
 	//This is for all of 65el02 addressing modes
-	private int getAbsoluteIndexedYAddress() {
+	private int getAbsoluteYAddress() {
 		int i = readByte(rPC); mIncPC();
 		i |= readByte(rPC) << 8; mIncPC();
 		return i + rY & 0xFFFF;
 	}
-	private int getAbsoluteIndexedXAddress() {
+	private int getAbsoluteXAddress() {
 		int i = readByte(rPC); mIncPC();
 		i |= readByte(rPC) << 8; mIncPC();
 		return i + rX & 0xFFFF;
@@ -191,11 +198,11 @@ public class CPU65EL02 {
 		i |= readByte(rPC) << 8; mIncPC();
 		return i;
 	}
-	private int getStackRealativeIndirectIndexedAddress() {
+	private int getStackRealativeYAddress() {
 		int i = readByte(rPC) + rSP & 0xFFFF; mIncPC();
 		return readShort(i) + rY & 0xFFFF;
 	}
-	private int getRStackRealativeIndirectIndexedAddress() {
+	private int getRStackRealativeYAddress() {
 		int i = readByte(rPC) + rR & 0xFFFF; mIncPC();
 		return readShort(i) + rY & 0xFFFF;
 	}
@@ -233,6 +240,11 @@ public class CPU65EL02 {
 	private int popByteR() {
 		int ret = readByte(rR);
 		rR = (rR + 1 & 0xFFFF);
+		return ret;
+	}
+	private int popWord() {
+		int ret = popByte();
+		ret |= (popByte() << 8);
 		return ret;
 	}
 	private int popWordR() {
@@ -281,7 +293,7 @@ public class CPU65EL02 {
 		i = i << 1 & overflowMaskM();
 		fZ = i == 0;
 		fN = (i & negativeMaskM()) > 0;
-		writeLocation(input, i);
+		writeWord(input, i);
 	}
 	private void instruction_php() {
 		pushByte(packFlags());
@@ -302,7 +314,7 @@ public class CPU65EL02 {
 		rA = i + 1 & negativeMaskM();
 		fZ = i == 0;
 		fN = (i & negativeMaskM()) > 0;
-		writeLocation(input, i);
+		writeWord(input, i);
 	}
 	private void instruction_rhx()
 	{
@@ -364,7 +376,7 @@ public class CPU65EL02 {
 		fC = ((i & negativeMaskM()) > 0);
 		fN = ((n & negativeMaskM()) > 0);
 		fZ = (n == 0);
-		writeLocation(input, n);
+		writeWord(input, n);
 	}
 	private void instruction_rol() {
 		int n = (rA << 1 | (fC ? 1 : 0)) & overflowMaskM();
@@ -391,6 +403,27 @@ public class CPU65EL02 {
 	}
 	private void instruction_dec() {
 		rA = (rA - 1 & overflowMaskM());
+		fN = ((rA & negativeMaskM()) > 0);
+		fZ = (rA == 0);
+	}
+	private void instruction_dec(int addr) {
+		int i = readWord(addr);
+		i = (i - 1 & overflowMaskM());
+		fN = ((i & negativeMaskM()) > 0);
+		fZ = (i == 0);
+		writeWord(addr, i);
+	}
+	private void instruction_rlx() {
+		rX = fX ? popByteR() : popWordR();
+		fN = ((rX & negativeMaskX()) > 0);
+		fZ = (rX == 0);
+	}
+	private void instruction_rti() {
+		unpackFlags(popByte());
+		rPC = popWord();
+	}
+	private void instruction_eor(int input) {
+		rA ^= input;
 		fN = ((rA & negativeMaskM()) > 0);
 		fZ = (rA == 0);
 	}
@@ -426,19 +459,19 @@ public class CPU65EL02 {
 			instruction_or(readWord(getIndirectAddress()));
 			break;
 		case 0x13:
-			instruction_or(readWord(getStackRealativeIndirectIndexedAddress()));
+			instruction_or(readWord(getStackRealativeYAddress()));
 			break;
 		case 0x15:
 			instruction_or(readWord(getZeroPageXAddress()));
 			break;
 		case 0x17:
-			instruction_or(readWord(getRStackRealativeIndirectIndexedAddress()));
+			instruction_or(readWord(getRStackRealativeYAddress()));
 			break;
 		case 0x19:
-			instruction_or(readWord(getAbsoluteIndexedYAddress()));
+			instruction_or(readWord(getAbsoluteYAddress()));
 			break;
 		case 0x1D:
-			instruction_or(readWord(getAbsoluteIndexedXAddress()));
+			instruction_or(readWord(getAbsoluteXAddress()));
 			break;
 		case 0x2:
 			instruction_nxt();
@@ -462,7 +495,7 @@ public class CPU65EL02 {
 			instruction_asl(getZeroPageXAddress());
 			break;
 		case 0x1E:
-			instruction_asl(getAbsoluteIndexedXAddress());
+			instruction_asl(getAbsoluteXAddress());
 			break;
 		case 0x8:
 			instruction_php();
@@ -480,7 +513,7 @@ public class CPU65EL02 {
 			instruction_mul(readWord(getAbsoluteAddress()));
 			break;
 		case 0x3F:
-			instruction_mul(readWord(getAbsoluteIndexedXAddress()));
+			instruction_mul(readWord(getAbsoluteXAddress()));
 			break;
 		case 0x10:
 			instruction_bpl();
@@ -498,7 +531,7 @@ public class CPU65EL02 {
 			instruction_inc(getAbsoluteAddress());
 			break;
 		case 0xFE:
-			instruction_inc(getAbsoluteIndexedXAddress());
+			instruction_inc(getAbsoluteXAddress());
 			break;
 		case 0xF6:
 			instruction_inc(getZeroPageXAddress());
@@ -516,7 +549,7 @@ public class CPU65EL02 {
 			instruction_jsr(getAbsoluteAddress());
 			break;
 		case 0xFC:
-			instruction_jsr(readShort(getAbsoluteIndexedXAddress()));
+			instruction_jsr(readShort(getAbsoluteXAddress()));
 			break;
 		case 0x21:
 			instruction_and(readWord(getIndexedIndirectAddress()));
@@ -543,19 +576,19 @@ public class CPU65EL02 {
 			instruction_and(readWord(getIndirectAddress()));
 			break;
 		case 0x33:
-			instruction_and(readWord(getStackRealativeIndirectIndexedAddress()));
+			instruction_and(readWord(getStackRealativeYAddress()));
 			break;
 		case 0x35:
 			instruction_and(readWord(getZeroPageXAddress()));
 			break;
 		case 0x37:
-			instruction_and(readWord(getRStackRealativeIndirectIndexedAddress()));
+			instruction_and(readWord(getRStackRealativeYAddress()));
 			break;
 		case 0x39:
-			instruction_and(readWord(getAbsoluteIndexedYAddress()));
+			instruction_and(readWord(getAbsoluteYAddress()));
 			break;
 		case 0x3D:
-			instruction_and(readWord(getAbsoluteIndexedXAddress()));
+			instruction_and(readWord(getAbsoluteXAddress()));
 			break;
 		case 0x22:
 			instruction_ent();
@@ -570,7 +603,7 @@ public class CPU65EL02 {
 			instruction_bit(readWord(getZeroPageXAddress()));
 			break;
 		case 0x3C:
-			instruction_bit(readWord(getAbsoluteIndexedXAddress()));
+			instruction_bit(readWord(getAbsoluteXAddress()));
 			break;
 		case 0x89:
 			instruction_bit();
@@ -588,7 +621,7 @@ public class CPU65EL02 {
 			instruction_rol(getZeroPageXAddress());
 			break;
 		case 0x3E:
-			instruction_rol(getAbsoluteIndexedXAddress());
+			instruction_rol(getAbsoluteXAddress());
 			break;
 		case 0x28:
 			instruction_plp();
@@ -604,6 +637,63 @@ public class CPU65EL02 {
 			break;
 		case 0x3A:
 			instruction_dec();
+			break;
+		case 0xC6:
+			instruction_dec(getZeroPageAddress());
+			break;
+		case 0xCE:
+			instruction_dec(getAbsoluteAddress());
+			break;
+		case 0xD6:
+			instruction_dec(getZeroPageXAddress());
+			break;
+		case 0xDE:
+			instruction_dec(getAbsoluteXAddress());
+			break;
+		case 0x3B:
+			instruction_rlx();
+			break;
+		case 0x40:
+			instruction_rti();
+			break;
+		case 0x41:
+			instruction_eor(readWord(getIndexedIndirectAddress()));
+			break;
+		case 0x43:
+			instruction_eor(readWord(getStackRelativeAddress()));
+			break;
+		case 0x45:
+			instruction_eor(readWord(getZeroPageAddress()));
+			break;
+		case 0x47:
+			instruction_eor(readWord(getRStackRelativeAddress()));
+			break;
+		case 0x49:
+			instruction_eor(readWord());
+			break;
+		case 0x4D:
+			instruction_eor(readWord(getAbsoluteAddress()));
+			break;
+		case 0x51:
+			instruction_eor(readWord(getIndirectIndexedAddress()));
+			break;
+		case 0x52:
+			instruction_eor(readWord(getIndirectAddress()));
+			break;
+		case 0x53:
+			instruction_eor(readWord(getStackRealativeYAddress()));
+			break;
+		case 0x55:
+			instruction_eor(readWord(getZeroPageXAddress()));
+			break;
+		case 0x57:
+			instruction_eor(readWord(getRStackRealativeYAddress()));
+			break;
+		case 0x59:
+			instruction_eor(readWord(getAbsoluteYAddress()));
+			break;
+		case 0x5D:
+			instruction_eor(readWord(getAbsoluteXAddress()));
 			break;
 		}
 	}

@@ -1,0 +1,16 @@
+import random
+a = input()
+b = input()
+f_read = open(a, 'r')
+a = []
+l = []
+for line in f_read:
+    line = line.strip()
+    l = line.split(' ')
+    a += l
+count = 0
+for x in range(len(a)):
+    if a[x] == b:
+      count += 1
+f_read.close()
+print(count)

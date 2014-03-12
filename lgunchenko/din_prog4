@@ -1,0 +1,9 @@
+n = int(input())
+k = 0
+A = []
+A.append(1)
+A.append(1)
+for i in range(2,n+2):
+	k = A[i-1] + A[i-2]
+	A.append(k)
+print(A[n+1])

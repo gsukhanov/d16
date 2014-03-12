@@ -1,0 +1,23 @@
+import random
+a = input()
+b = input()
+f_read = open(a, 'r')
+f_write = open(b, 'w')
+
+a = []
+l = []	
+
+for line in f_read:
+    line = line.strip()
+    d = line.split(' ')
+    a += d
+    
+k = a[0]
+
+for i in range(1,len(a)):
+	if a[i] != k:
+		f_write.write(a[i])
+		f_write.write(' ')
+		k = a[i]
+		f_read.close()
+f_write.close()

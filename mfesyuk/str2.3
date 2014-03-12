@@ -1,0 +1,15 @@
+f1 = input()
+f2 = input()
+f_read = open(f1, 'r')
+for line in f_read.readlines():
+	line = line.strip()
+	r = line.translate(str.maketrans({"o":"0"}))
+f_read.close()
+f_read = open(f2, 'w')
+f_read.writelines(r)
+f_read.close()
+f_read = open(f2, 'r')
+for line in f_read.readlines():
+	line = line.strip()
+	print(line)
+f_read.close()

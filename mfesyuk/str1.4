@@ -1,0 +1,13 @@
+name = input()
+n = 0
+f_read = open(name, 'r')
+for line in f_read.readlines():
+	line = line.strip()
+	s = line.split(" ")
+	print(s)
+	for i in range(len(s)):
+		word = s[i]
+		if word == word[-1::-1]:
+			n += 1
+print(n)
+f_read.close()

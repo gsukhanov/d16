@@ -1,0 +1,15 @@
+filename=input("file name,please:")
+file_name=input("reading file,please:")
+inputfile = open(filename,"r")
+outputfile=open(file_name,"w")
+prevword="fred"
+for line in inputfile:
+	line=line.strip()
+	line=line.split()
+	for word in line:
+		if word !=prevword:
+			prevword=word
+			outputfile.write(word)
+			outputfile.write("\t")
+outputfile.close()
+inputfile.close()

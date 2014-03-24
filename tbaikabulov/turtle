@@ -1,0 +1,16 @@
+import turtle
+turtle.speed('fastest')
+ANGLE = 60
+def draw_levi(length, depth):
+    if depth == 0:
+        turtle.forward(length)
+    else:
+        draw_levi(length/3, depth-1)
+        turtle.left(ANGLE)
+        draw_levi(length/3, depth-1)
+        turtle.right(2*ANGLE)
+        draw_levi(length/3, depth-1)
+        turtle.left(ANGLE)
+        draw_levi(length/3, depth-1)
+draw_levi(300, 4)
+input()
